@@ -1,56 +1,49 @@
 #!/bin/bash
-# Zsh + Plugins Installer Script (No custom prompt)
+# Zsh + Oh My Zsh + Plugins Auto Installer
 
 set -e
 
+echo "[*] Updating packages..."
+apt update -y && apt upgrade -y
+
 echo "[*] Installing Zsh..."
-sudo apt update -y
-sudo apt install zsh git -y
-
-echo "[*] Creating plugin directories..."
-mkdir -p ~/.zsh
-
-echo "[*] Installing zsh-autosuggestions..."
-if [ ! -d "$HOME/.zsh/zsh-autosuggestions" ]; then
-    git clone https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/zsh-autosuggestions
-else
-    echo "    -> zsh-autosuggestions already exists, skipping."
-fi
-
-echo "[*] Installing zsh-syntax-highlighting..."
-if [ ! -d "$HOME/.zsh/zsh-syntax-highlighting" ]; then
-    git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.zsh/zsh-syntax-highlighting
-else
-    echo "    -> zsh-syntax-highlighting already exists, skipping."
-fi
-
-echo "[*] Backing up existing .zshrc if present..."
-[ -f ~/.zshrc ] && mv ~/.zshrc ~/.zshrc.backup
-
-echo "[*] Creating new .zshrc with colors and plugins..."
-cat << 'EOF' > ~/.zshrc
-# Enable colors
-autoload -Uz colors && colors
-
-# Autosuggestions plugin
-source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#888888'
-
-# Syntax highlighting plugin
-source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-
-# History settings
-HISTFILE=~/.zsh_history
-HISTSIZE=1000
-SAVEHIST=1000
-
-# Options
-setopt autocd
-setopt correct
-autoload -Uz compinit && compinit
-EOF
+apt install -y zsh git curl
 
 echo "[*] Changing default shell to Zsh..."
 chsh -s "$(which zsh)"
 
-echo "[*] Done! Restart your terminal or run 'exec zsh' now."
+echo "[*] Installing Oh My Zsh..."
+RUNZSH=no KEEP_ZSHRC=yes \
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.zsh}"
+
+echo "[*] Installing Zsh plugins..."
+# Autosuggestions
+if [ ! -d "$ZSH_CUSTOM/zsh-autosuggestions" ]; then
+    git clone https://github.com/zsh-users/zsh-autosuggestions "$ZSH_CUSTOM/zsh-autosuggestions"
+fi
+# Syntax highlighting
+if [ ! -d "$ZSH_CUSTOM/zsh-syntax-highlighting" ]; then
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting "$ZSH_CUSTOM/zsh-syntax-highlighting"
+fi
+
+echo "[*] Configuring ~/.zshrc..."
+{
+    echo ""
+    echo "# Enable colors"
+    echo "autoload -Uz colors && colors"
+    echo ""
+    echo "# Zsh Autosuggestions"
+    echo "source $ZSH_CUSTOM/zsh-autosuggestions/zsh-autosuggestions.zsh"
+    echo "ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#888888'"
+    echo ""
+    echo "# Syntax Highlighting"
+    echo "source $ZSH_CUSTOM/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+    echo ""
+    echo "# Fix insecure completion directories"
+    echo "compaudit | xargs chmod g-w,o-w 2>/dev/null || true"
+} >> ~/.zshrc
+
+echo "[*] Installation complete! Start Zsh with:"
+echo "    exec zsh"
