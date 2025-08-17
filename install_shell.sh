@@ -46,4 +46,4 @@ echo "[*] Configuring ~/.zshrc..."
 } >> ~/.zshrc
 
 echo "[*] Installation complete! Start Zsh with:"
-echo "    exec zsh"
+echo "    Now Execute 'zsh' and you're good to go."
