@@ -4,7 +4,7 @@
 set -e
 
 echo "[*] Updating packages..."
-apt update -y && apt upgrade -y
+apt update -y
 
 echo "[*] Installing Zsh..."
 apt install -y zsh git curl
