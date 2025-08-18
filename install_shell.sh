@@ -46,4 +46,6 @@ echo "[*] Configuring ~/.zshrc..."
 } >> ~/.zshrc
 
 echo "[*] Installation complete! Start Zsh with:"
+echo "unset zle_bracketed_paste" >> ~/.zshrc
+source ~/.zshrc
 echo "    Now Execute 'zsh' and you're good to go."
